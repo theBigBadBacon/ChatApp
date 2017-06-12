@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ChatApp!</title>
+	<script src="https://unpkg.com/vue"></script>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABp1BMVEUAAAAAAAAlJSX6xQMGBgYAAAAaGhohISECAgIBAQH2wgMBAQGZeQI/MQAAAAAAAADxvwS/lwLvvQPhsgOWdgKUdAIBAQGuiQKffQNHOAFlTwFZSABOPgBKOwEyKAEAAAACAgIAAAAFBQUAAAACAgIAAAAAAAAAAADsuwO8lQPltQThsgNiTgHYqwS3kAPUpwPKoALPowKkgQKmgwJCMwAzKAAhGQAVEgEbFgALCQEDAgAIBQABAQAAAAAAAAAAAAAHBwcAAAAqKirjtAbntwTrugO5kgO1kAOYeAKlgwKJbQF/ZQKDaAGPcgGMbwF8YwFBNAJRQAJcSQEtIwAoIAADAwAAAAAAAAD6xgT9yATzwQa7kwK5kgLquQPQpAO8lQO0jwO2kATltAN6YAJhTQJ8YgF2XQEBAQHcrgSnhASQcgKAZgLitAWcewOHawJzWgKKbQHuvASzjgT4xAPhsgPIngOjgQOUdQOxjAKEaAJwWAJnUgLZrATOogOMbwNcSQPDmgJqVAE5LQE0KQHzwAaphwSOcAOYeAJWRAFJOQGtiQMqIQAbFQAuOkhXAAAAWHRSTlMAAgz+KU4IBjk1+0Dw21tD/vz48/PvdvXy8evn4uHVimAyMCwlHRED+vj39vb19fT08/Lx5djLycbAu6yXkX5rSBgL9/f19PT08/Py8vHx8e/u7tLQo4JYeYnAUwAAAoRJREFUOMttk4dS20AQhmUVYhsMxjimBEKHACGE3gmQ3ntypy6ruHfc6TUkeejoTrJmSLIz2tHut7r951ZL3DDabdoQ8bfdajjyQ4tpH2knZ/FdF0G4SOSagxAC9sF3HGKHy9A7vTFqJh49NDl42m+isU0P5uhB/O507wA5uOY1OYQr2+OMb6bPY4KmBr8HQdeXN5OIg+Rk8PNbivX2DuImNkcIufDhdcl6g95et9WA3JyxeS528ktLctAOH6/bInf6rERUE43yuV+m7ON6hhsiW4M4IV3/EFlwevrT4s9CjkhyCZ/ajjh05Czcaogkh9/jrHwkAlg7OzsTcDjHWHxsO7Q2hb+6ONqH8HckEsnj0Lv8jRkliJHurlkKJPfC4b2jUzl8EDHNiJqhwIKOzvsM4bmNGsYNvZ4x1JOMVtMzmqZqdTWFlEy0mgWoYYUrZPiKkFASxrGsxgUtXcZK21EBasjzflWqh9McL6RlCUKdNRAHuAAJUuSCLp3EshLvT/CX+1S9UkUcmgV0d2cHBHmO0qVSLSspQoIri+c1OQ1skcQos7U6rXAFXeGyWSkvVDmOpXSost7lLWbEuknPazERj/FcMaUcJnilmsqpwAAvGecmXSswWgQ5gdrPiXsgeSAWomwULjSR9rhdzDvARivVbCxezvCX8lW6dHgM4fNQ458c81EsSPLxfKpUjF/EisdXsdQBGjdtj7t/Fs/vHxdYt8dN+wL/49Sd5oZI2uc312Hx1RMLBV4stmDuiCRGfB09oXH3qhd/utQ2PtA3hbmzOENfh53FCaDF2dmwOK5xNs0dRP0nBuzQWRyiyWW53e6uufn5T0MuJ2cf4LjBNtOab+T+AOit1nk2BbNQAAAAAElFTkSuQmCC" type="data:image/png" />
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+</head>
+<body>
+	<div class="app">
+		<div class="main">
+			<div class="chat">
+				<div class="chat-board" id="content">
+					<chat-item v-for="item in messages" :data="item" :key="item.text"></chat-item>
+				</div>
+				<div class="chat-new u-hidden js-newMessages">New messages <i class="material-icons">arrow_downward</i></div>
+				<!--<div @click="scrollBottom" :class="['chat-new', !this.newMessages ? 'u-hidden' : '']">New messages {{this.newMessages}} <i class="material-icons">arrow_downward</i></div>-->
+			</div>
+			<div class="info">
+				<div class="info-bar" id="infobar">
+					<i class="material-icons js-profile">person_outline</i>
+					<input type="text" id="username" class="info-bar-name" value=""/>
+					<span class="divider divider--following"></span>
+					<i class="material-icons">search</i>
+					<input type="text" name="keyword" id="search" />
+					<span id="infobar2">
+					<ul id="searchChannelResults" class="info-bar-results js-resultList u-hidden">
+					<!--<ul @click="resultJoin" id="infobar" :class="['info-bar-results js-resultList', this.isHidden ? 'u-hidden' : '']">-->
+						<li v-for="item in resultList">
+							{{ item }}
+						</li>
+					</ul>
+					</span>
+				</div>
+				<input type="submit" name="host" class="js-host" value="Start">
+				<input type="submit" name="join" class="js-join" value="Join">
+			</div>
+			<div id="statusMessage" class="message" @click="isActive = false" v-bind:class="[statusClasses,{ 'is-active': isActive }]">{{ message }}</div>
+			<div class="chat-user">
+				<div class="chat-user-message">
+					<div class="chat-user-message-text">
+						<textarea id="field" placeholder="Message..."></textarea>
+					</div>
+					<div class="chat-user-message-button">
+						<input type="submit" id="send" value="Send" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="sidebar">
+			<ul class="connections" id="connections">
+				<channel v-for="(channel, id) in channels" :data="channel" :name="id" :id="id" :key="id"></channel>
+			</ul>
+			<div class="expander js-trigger"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var socket = io.connect();
+/*		var socket = io.connect('/', {
+			'reconnection': true,
+			'reconnectionDelay': 500,
+			'reconnectionAttempts': 10
+		});
+*/
+var localName = '';
+console.log(socket);
+console.log('PMs not pushed into messages array? Do not do that for privacy maybe?');
+
+/**
+ 	ToDo:
+ V	Add channel list with updates
+ V	Add length check
+ V	Remove need for # in beginning of string on host
+ V	Add az check on server side
+ V	Add onload load channels he is connected to (connectionLost though upon refresh)
+ *	Rewrite just like leave ? What did I think here, hmm?
+ V	Add username check and save - disable for testing
+ *	Add Vue JS :)
+ V	Auto scroll down if new messages
+ *	Handle reconnects
+ *	Destroy empty rooms
+ V	Add PM support - check unique usernames!
+ *	FIX MOBILE!
+ */
+
+		var searchActive = 0;
+
+		var field = document.getElementById('field');
+		var sendButton = document.getElementById('send');
+		var content = document.getElementById('content');
+		var searchField = document.getElementById('search');
+		var user = document.getElementById('username');
+		var statusMessage = document.getElementById('statusMessage');
+		var connectionList = document.getElementById('connections');
+		var chatTarget = document.querySelector('.chat');
+		var chatNew = document.querySelector('.chat-new');
+		var sidebar = document.querySelector('.sidebar');
+		var target = '#All';
+
+		localUser = localStorage.getItem('chatAppUser') ? JSON.parse(localStorage.getItem('chatAppUser')) : localName;
+		if (localUser && localUser.name) {
+			user.value = localUser.name;
+
+			for (var i in localUser.rooms) {
+console.log(localUser.rooms[i]);
+				if (localUser.rooms[i] !== '#All') {
+					joinChannel(localUser.rooms[i]);
+				}
+			}
+
+			socket.emit('switch', {
+				user: user.value,
+				id: localUser.activeChannel
+			});
+		}
+
+		function sendMessage() {
+			var username = document.getElementById('username').value;
+
+			if (username && field.value) {
+				socket.emit('send', {
+					id: target,
+					user: '@' + username,
+					message: field.value
+				});
+				field.value = '';
+				/*
+				localUser = JSON.parse(localStorage.getItem('chatAppUser'));
+				if (typeof localUser === 'undefined' || localUser.name !== username) {
+					updateUser();
+				}
+				*/
+			} else if (username) {
+				errorMessage('Forgot something? A message maybe?');
+			} else {
+				errorMessage('Choose username!');
+			}
+		}
+
+		function updateUser() {
+			if (typeof connectionList.channels === 'undefined') {
+				return;
+			}
+			localStorage.setItem('chatAppUser', JSON.stringify({
+				name: user.value,
+				rooms: Object.keys(connectionList.channels),
+				activeChannel: connectionList.activeChannel
+			}));
+		}
+
+		function scrollToBottom(target) {
+			var before = target.scrollTop;
+			var pace = target.scrollHeight < 100 ? 100 : (target.scrollHeight / 10);
+			target.scrollTop += pace;
+			if (before < target.scrollTop) {
+				setTimeout(function() {
+					scrollToBottom(target);
+				}, 50);
+			}
+		}
+/*
+		function scrollToBottom() {
+console.log(chatTarget);
+			var before = chatTarget.scrollTop;
+			var pace = chatTarget.scrollHeight < 100 ? 100 : (chatTarget.scrollHeight / 10);
+			chatTarget.scrollTop += pace;
+			if (before < chatTarget.scrollTop) {
+				setTimeout(function() {
+					scrollToBottom();
+				}, 50);
+			}
+		}
+*/
+		function newChannel(name) {
+			var channel = connectionList.channels[name];
+
+			connectionList.deactivateAll;
+
+			Vue.set(connectionList.channels, name, {
+				isActive: true,
+				isUnread: false,
+				room: name
+			});
+
+			setTimeout(function() {
+				scrollToBottom(chatTarget);
+			}, 0);
+
+			updateUser();
+		}
+
+		function leaveChannel(name) {
+			var channel = document.getElementById(name);
+
+			if (channel) {
+				socket.emit('leave', name);
+				channel.remove();
+
+				Vue.delete(connectionList.channels, name);
+			}
+
+			updateUser();
+		}
+
+		function joinChannel(name) {
+			if (!name) {
+				return;
+			}
+
+			socket.emit('join', {
+				user: user.value,
+				id: name
+			});
+
+			updateUser();
+		}
+
+		function searchChannel(name) {
+			socket.emit('list', {
+				string: name
+			});
+		}
+
+		function errorMessage(message) {
+			infoplace.statusClasses = 'message--error';
+			infoplace.message = message;
+			infoplace.isActive = true;
+		}
+
+		socket.on('ping', function(data) {
+			socket.emit('pong');
+		});
+
+socket.on('init', function(data) {
+	console.log('Init data', data);
+	user.value = data.status;
+});
+		socket.on('message', function (data) {
+console.log('incoming!', data, target);
+//Only display error messages!! Philosphoyophpahppy
+			if (data.id === target) {
+				if (!chat.messages) {
+					chat.messages = [];
+				}
+
+				chat.messages.push(data);
+
+				if (chatTarget.scrollTop < (chatTarget.scrollHeight - 500)) {
+					//var chatNew = document.querySelector('.chat-new');
+					chatNew.className = 'chat-new js-newMessages';
+					//content.newMessages = true;
+				} else {
+					setTimeout(function() {
+						scrollToBottom(chatTarget);
+					}, 0);
+
+					//content.newMessages = false;
+					chatNew.className = 'chat-new u-hidden js-newMessages';
+				}
+			} else {
+				Vue.set(connectionList.channels, data.id, {
+					isActive: false,
+					isUnread: true,
+					room: data.id
+				});
+console.log('Removed @ prefix. Why was that?');
+				/*
+				Vue.set(connectionList.channels, '@' + data.id, {
+					isActive: false,
+					isUnread: true,
+					room: '@' + data.id
+				});
+				*/
+console.log(connectionList.channels, connectionList.channels[data.id]);
+//This new declaration should not be needed
+console.log('this is apparently not working', data.id);
+				connectionList.channels[data.id].isUnread = true;
+console.log(connectionList.channels[data.id]);
+			}
+		});
+
+		socket.on('userMessage', function (data) {
+
+			if (data.user === target || data.target === target) {
+
+				if (!chat.messages) {
+					chat.messages = [];
+				}
+
+				chat.messages.push(data);
+			} else {
+
+				Vue.set(connectionList.channels, data.user, {
+					isActive: false,
+					isUnread: true,
+					room: data.user
+				});
+			}
+		});
+
+		socket.on('errorMessage', function (data) {
+			errorMessage(data);
+		});
+
+		socket.on('list', function (data) {
+			results.resultList = data.list;
+			results.isHidden = false;
+		});
+
+		socket.on('joinedChannel', function (data) {
+console.log('joined:', data);
+			newChannel(data.id);
+
+			target = data.id;
+			chat.messages = data.messages;
+		});
+
+		document.addEventListener('keyup', function(e) {
+//console.log(search.value, searchActive);
+			/*
+			if (e.key === '#') {
+				//Channel search
+				searchField.value = '#';
+				searchActive = 1;
+			} else if (e.key === '@') {
+				//User search
+				searchField.value = '@';
+				searchActive = 2;
+			} else if (e.keyCode === 8 || e.keyCode === 46) {
+				//Clear search field with Backspace or Delete key
+				searchField.value = '';
+				searchActive = 0;
+			} else if (searchActive > 0) {
+				if (e.key.match(/^\w$/)) {
+					searchField.value += e.key;
+					//Search for channels / users
+				}
+			} else*/ if (e.keyCode === 13) {
+				if (searchActive === 1) {
+					var val = searchField.value;
+					joinChannel(val);
+				} else {
+					sendMessage();
+				}
+			} else if (searchActive === 1) {
+				var val = searchField.value;
+				searchChannel(val);
+			}
+		});
+
+		search.addEventListener('focus', function() {
+			searchActive = 1;
+		});
+
+		search.addEventListener('blur', function() {
+			searchActive = 0;
+			setTimeout(function() {
+				document.querySelector('.js-resultList').className = 'info-bar-results js-resultList u-hidden';
+				//results.isHidden = true;
+			}, 100);
+		});
+
+		sendButton.addEventListener('click', sendMessage);
+
+		user.addEventListener('blur', function() {
+console.log('blur evt triggered', this);
+			updateUser();
+		});
+
+		document.querySelector('.js-resultList').addEventListener('click', function(e) {
+			var channel = e.target.childNodes[0].nodeValue;
+			joinChannel(channel);
+		});
+
+		document.querySelector('.js-newMessages').addEventListener('click', function(e) {
+			chatNew.className = 'chat-new u-hidden js-newMessages';
+			scrollToBottom(chatTarget);
+		});
+
+		document.querySelector('.js-join').addEventListener('click', function() {
+			var val = searchField.value;
+			if (val[0] !== '#' || val[0] !== '@') {
+console.log('Appending # to', val);
+				val = '#' + val;
+			}
+
+			if (!val.match(/^([#@a-zA-Z0-9])+/)) {
+				errorMessage('Invalid name!', val);
+				return;
+			}
+
+			if (val[0] === '#' || val[0] === '@') {
+				joinChannel(val);
+			} else {
+				errorMessage('Missing identifier!');
+			}
+		});
+
+		document.querySelector('.js-host').addEventListener('click', function() {
+			socket.emit('host', {
+				id: searchField.value,
+				user: user.value
+			});
+		});
+
+		document.querySelector('.js-profile').addEventListener('click', function() {
+			if (user.className == 'info-bar-name') {
+				user.className = 'info-bar-name is-hidden';
+				user.parentNode.childNodes[5].className = 'divider';
+			} else {
+				user.className = 'info-bar-name';
+				user.parentNode.childNodes[5].className = 'divider divider--following';
+			}
+		});
+
+		document.querySelector('.js-trigger').addEventListener('click', function() {
+			if (this.className === 'expander js-trigger') {
+				this.className = 'expander is-open js-trigger';
+				sidebar.className = 'sidebar is-open';
+			} else {
+				this.className = 'expander js-trigger';
+				sidebar.className = 'sidebar';
+			}
+		});
+
+		document.querySelector('.connections').addEventListener('click', function(e) {
+console.log(e.target);
+			if (e.target.className.indexOf('is-active') > -1) {
+				return;
+			}
+
+			if (e.target.className === 'connection-close js-close') {
+console.log('exit');
+				leaveChannel(e.target.parentNode.id);
+			} else {
+				newChannel(e.target.id);
+
+				socket.emit('switch', {
+					user: user.value,
+					id: e.target.id
+				});
+			}
+		});
+	</script>
+	<script type="text/javascript" src="/js/vue.js"></script>
+</body>
+</html>

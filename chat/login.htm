@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ChatApp!</title>
+	<script src="https://unpkg.com/vue"></script>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABp1BMVEUAAAAAAAAlJSX6xQMGBgYAAAAaGhohISECAgIBAQH2wgMBAQGZeQI/MQAAAAAAAADxvwS/lwLvvQPhsgOWdgKUdAIBAQGuiQKffQNHOAFlTwFZSABOPgBKOwEyKAEAAAACAgIAAAAFBQUAAAACAgIAAAAAAAAAAADsuwO8lQPltQThsgNiTgHYqwS3kAPUpwPKoALPowKkgQKmgwJCMwAzKAAhGQAVEgEbFgALCQEDAgAIBQABAQAAAAAAAAAAAAAHBwcAAAAqKirjtAbntwTrugO5kgO1kAOYeAKlgwKJbQF/ZQKDaAGPcgGMbwF8YwFBNAJRQAJcSQEtIwAoIAADAwAAAAAAAAD6xgT9yATzwQa7kwK5kgLquQPQpAO8lQO0jwO2kATltAN6YAJhTQJ8YgF2XQEBAQHcrgSnhASQcgKAZgLitAWcewOHawJzWgKKbQHuvASzjgT4xAPhsgPIngOjgQOUdQOxjAKEaAJwWAJnUgLZrATOogOMbwNcSQPDmgJqVAE5LQE0KQHzwAaphwSOcAOYeAJWRAFJOQGtiQMqIQAbFQAuOkhXAAAAWHRSTlMAAgz+KU4IBjk1+0Dw21tD/vz48/PvdvXy8evn4uHVimAyMCwlHRED+vj39vb19fT08/Lx5djLycbAu6yXkX5rSBgL9/f19PT08/Py8vHx8e/u7tLQo4JYeYnAUwAAAoRJREFUOMttk4dS20AQhmUVYhsMxjimBEKHACGE3gmQ3ntypy6ruHfc6TUkeejoTrJmSLIz2tHut7r951ZL3DDabdoQ8bfdajjyQ4tpH2knZ/FdF0G4SOSagxAC9sF3HGKHy9A7vTFqJh49NDl42m+isU0P5uhB/O507wA5uOY1OYQr2+OMb6bPY4KmBr8HQdeXN5OIg+Rk8PNbivX2DuImNkcIufDhdcl6g95et9WA3JyxeS528ktLctAOH6/bInf6rERUE43yuV+m7ON6hhsiW4M4IV3/EFlwevrT4s9CjkhyCZ/ajjh05Czcaogkh9/jrHwkAlg7OzsTcDjHWHxsO7Q2hb+6ONqH8HckEsnj0Lv8jRkliJHurlkKJPfC4b2jUzl8EDHNiJqhwIKOzvsM4bmNGsYNvZ4x1JOMVtMzmqZqdTWFlEy0mgWoYYUrZPiKkFASxrGsxgUtXcZK21EBasjzflWqh9McL6RlCUKdNRAHuAAJUuSCLp3EshLvT/CX+1S9UkUcmgV0d2cHBHmO0qVSLSspQoIri+c1OQ1skcQos7U6rXAFXeGyWSkvVDmOpXSost7lLWbEuknPazERj/FcMaUcJnilmsqpwAAvGecmXSswWgQ5gdrPiXsgeSAWomwULjSR9rhdzDvARivVbCxezvCX8lW6dHgM4fNQ458c81EsSPLxfKpUjF/EisdXsdQBGjdtj7t/Fs/vHxdYt8dN+wL/49Sd5oZI2uc312Hx1RMLBV4stmDuiCRGfB09oXH3qhd/utQ2PtA3hbmzOENfh53FCaDF2dmwOK5xNs0dRP0nBuzQWRyiyWW53e6uufn5T0MuJ2cf4LjBNtOab+T+AOit1nk2BbNQAAAAAElFTkSuQmCC" type="data:image/png" />
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<style type="text/css">
+		html {
+			height: 100%;
+		}
+		body {
+			background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#7db9e8 100%);
+			color: white;
+			font-size: 2em;
+			font-family: 'Titillium Web', sans-serif;
+			text-align: center;
+		}
+		.loginButtons {
+			display: inline-block;
+		}
+		.link {
+			position: relative;
+			display: inline-block;
+			width: 100%;
+			padding: 10px 16px;
+			margin-top: 10px;
+			text-decoration: none;
+			color: white;
+			font-size: 20px;
+			border: 1px solid #444;
+			text-align: left;
+		}
+		.link:hover:after {
+			content: "";
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			background: rgba(255,255,255,0.2);
+		}
+		.link:active {
+			top: 1px;
+		}
+		.link--facebook {
+			background: linear-gradient(#1e5799, #2e5799);
+		}
+		.link--google {
+			background: linear-gradient(#99231e, #99232e);
+		}
+		.link span {
+			position: absolute;
+			right: 0;
+			margin-left: 8px;
+			padding: 2px 8px 0;
+			border-left: 1px solid #444;
+			width: 20px;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<div class="loginButtons">
+		<a href="/auth/facebook" class="link link--facebook">Login with Facebook<span class="ion-social-facebook"></span></a><br>
+		<a href="/auth/google" class="link link--google">Login with Google+<span class="ion-social-googleplus"></span></a><br>
+	</div>
+</body>
+</html>
